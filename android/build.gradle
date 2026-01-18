@@ -4,49 +4,58 @@ version '1.0'
 buildscript {
     repositories {
         google()
-        jcenter()
+        mavenCentral() // jcenter() is deprecated and should be replaced
     }
 
     dependencies {
-        classpath 'com.android.tools.build:gradle:4.1.0'
+        // Upgrade AGP to 8.x (8.7.2 is stable for Gradle 8.12)
+        classpath 'com.android.tools.build:gradle:8.7.2'
     }
 }
 
 rootProject.allprojects {
     repositories {
         google()
-        jcenter()
+        mavenCentral()
     }
 }
 
 apply plugin: 'com.android.library'
-
-dependencies {
-    implementation fileTree(include: '*.jar', dir: 'libs')
-    implementation 'androidx.annotation:annotation:1.1.0'
-}
+// Add this to fix the "MavenPlugin" error you had
+apply plugin: 'maven-publish'
 
 android {
-    compileSdkVersion 33
+    // 1. Namespace is now REQUIRED in Gradle 8+
+    namespace 'is.mideind.flutter_snowboy'
+
+    compileSdk 34 // 'SdkVersion' suffix is often shortened in newer DSL
 
     defaultConfig {
-        minSdkVersion 21
+        minSdk 21
+        // 2. Remove 'versionCode' and 'versionName' if they exist here (not allowed in libraries anymore)
     }
 
-    sourceSets {
-        main {
-            java.srcDirs = ['src']
-            resources.srcDirs = ['src']
-            aidl.srcDirs = ['src']
-            renderscript.srcDirs = ['src']
-            res.srcDirs = ['res']
-            assets.srcDirs = ['assets']
-        }
-    }
+    // 3. RenderScript is deprecated and disabled by default in AGP 8
     buildFeatures {
         renderScript true
         aidl true
     }
+
+    compileOptions {
+        // 4. Java 17 is the minimum required to run AGP 8.0+
+        sourceCompatibility JavaVersion.VERSION_17
+        targetCompatibility JavaVersion.VERSION_17
+    }
+
+    sourceSets {
+        main {
+            java.srcDirs = ['src/main/java'] // Standardize your paths if possible
+            res.srcDirs = ['src/main/res']
+            assets.srcDirs = ['src/main/assets']
+        }
+    }
 }
 
-android.sourceSets.main.assets.srcDirs += ['assets/']
+dependencies {
+    implementation 'androidx.annotation:annotation:1.7.0' // Updated version
+}

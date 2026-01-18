@@ -128,20 +128,18 @@ class _SnowboyExampleAppState extends State<SnowboyExampleApp> {
     await _micRecorder.openRecorder();
 
     // Create recording stream
-    _recordingDataController = StreamController<Food>();
+    _recordingDataController = StreamController<Uint8List>();
     _recordingDataSubscription =
         _recordingDataController?.stream.listen((buffer) {
       // When we get data, feed it into Snowboy detector
-      if (buffer is FoodData) {
-        Uint8List copy = new Uint8List.fromList(buffer.data!);
-        // print("Got audio data (${buffer.data.lengthInBytes} bytes");
-        detector.detect(copy);
-      }
+      Uint8List copy = new Uint8List.fromList(buffer);
+      // print("Got audio data (${buffer.lengthInBytes} bytes");
+      detector.detect(copy);
     });
 
     // Start recording
     await _micRecorder.startRecorder(
-        toStream: _recordingDataController!.sink as StreamSink<Food>,
+        toStream: _recordingDataController!.sink as StreamSink<Uint8List>,
         codec: Codec.pcm16,
         numChannels: kNumChannels,
         sampleRate: kSampleRate);
